@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from "react";
-
-// 🔹 Replace this with your Firebase Project ID
-const PROJECT_ID = "my-crud-app-2b66d";
-const BASE_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
+import { BASE_URL } from "./firebase";
 
 function App() {
   const [name, setName] = useState("");
   const [users, setUsers] = useState([]);
   const [editId, setEditId] = useState(null);
 
-  // ----------------------
-  // Fetch all users
-  // ----------------------
   const fetchUsers = async () => {
     try {
       const res = await fetch(`${BASE_URL}/users`);
       const data = await res.json();
+      console.log("Fetch response:", data);
 
       if (!data.documents) {
         setUsers([]);
@@ -32,21 +27,18 @@ function App() {
     }
   };
 
-  // ----------------------
-  // Create a user
-  // ----------------------
   const createUser = async () => {
     if (!name.trim()) return;
     try {
-      await fetch(`${BASE_URL}/users`, {
+      const res = await fetch(`${BASE_URL}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fields: {
-            name: { stringValue: name },
-          },
+          fields: { name: { stringValue: name } },
         }),
       });
+      const data = await res.json();
+      console.log("Create response:", data);
       setName("");
       fetchUsers();
     } catch (err) {
@@ -54,23 +46,17 @@ function App() {
     }
   };
 
-  // ----------------------
-  // Update a user
-  // ----------------------
   const updateUser = async (id) => {
     try {
-      await fetch(
-        `${BASE_URL}/users/${id}?updateMask.fieldPaths=name`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fields: {
-              name: { stringValue: name },
-            },
-          }),
-        }
-      );
+      const res = await fetch(`${BASE_URL}/users/${id}?updateMask.fieldPaths=name`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fields: { name: { stringValue: name } },
+        }),
+      });
+      const data = await res.json();
+      console.log("Update response:", data);
       setName("");
       setEditId(null);
       fetchUsers();
@@ -79,14 +65,9 @@ function App() {
     }
   };
 
-  // ----------------------
-  // Delete a user
-  // ----------------------
   const deleteUser = async (id) => {
     try {
-      await fetch(`${BASE_URL}/users/${id}`, {
-        method: "DELETE",
-      });
+      await fetch(`${BASE_URL}/users/${id}`, { method: "DELETE" });
       fetchUsers();
     } catch (err) {
       console.error("Error deleting user:", err);
@@ -118,7 +99,12 @@ function App() {
         {users.map((user) => (
           <li key={user.id}>
             {user.name}{" "}
-            <button onClick={() => { setEditId(user.id); setName(user.name); }}>
+            <button
+              onClick={() => {
+                setEditId(user.id);
+                setName(user.name);
+              }}
+            >
               Edit
             </button>
             <button onClick={() => deleteUser(user.id)}>Delete</button>
