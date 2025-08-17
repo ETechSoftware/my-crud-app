@@ -36,7 +36,7 @@ function App() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
   return (
     <div style={{ padding: 20 }}>
